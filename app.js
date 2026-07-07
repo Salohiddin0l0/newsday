@@ -7,29 +7,39 @@ const state = {
   query: "",
   showBookmarks: false,
   bookmarks: JSON.parse(localStorage.getItem("nd_bk") || "[]"),
+  theme: localStorage.getItem("nd_theme") || "light",
 };
 
 const EXTRA = {
   uz:  { saved:"Saqlanganlar", live:"Jonli", empty:"Hech narsa topilmadi", emptyBk:"Saqlangan yangiliklar yo'q",
-         main:"Asosiy", focus:"Diqqat markazida", latest:"So'nggi yangiliklar", photo:"Foto", video:"Video" },
+         main:"Asosiy", focus:"Tahririyat tanlovi", latest:"So'nggi yangiliklar", photo:"Foto", video:"Video" },
   uzc: { saved:"Сақланганлар", live:"Жонли", empty:"Ҳеч нарса топилмади", emptyBk:"Сақланган янгиликлар йўқ",
-         main:"Асосий", focus:"Диққат марказида", latest:"Сўнгги янгиликлар", photo:"Фото", video:"Видео" },
+         main:"Асосий", focus:"Таҳририят танлови", latest:"Сўнгги янгиликлар", photo:"Фото", video:"Видео" },
   ru:  { saved:"Закладки", live:"Срочно", empty:"Ничего не найдено", emptyBk:"Нет сохранённых новостей",
-         main:"Главное", focus:"В фокусе", latest:"Последние новости", photo:"Фото", video:"Видео" },
+         main:"Главное", focus:"Выбор редакции", latest:"Последние новости", photo:"Фото", video:"Видео" },
   en:  { saved:"Bookmarks", live:"Live", empty:"Nothing found", emptyBk:"No saved stories",
-         main:"Top", focus:"In focus", latest:"Latest news", photo:"Photo", video:"Video" },
+         main:"Top", focus:"Editor's choice", latest:"Latest news", photo:"Photo", video:"Video" },
 };
 
 function t(key, ...a){ const v = I18N[state.lang][key]; return typeof v === "function" ? v(...a) : v; }
 function x(key){ return EXTRA[state.lang][key]; }
 function loc(o){ return o[state.lang] || o.ru; }
 
+// Время в стиле Kun.uz: сегодня — «13:32», старше — «19:24 / 06.07.2026»
 function timeAgo(min){
-  const map = { uz:["daqiqa oldin","soat oldin","kun oldin"], uzc:["дақиқа олдин","соат олдин","кун олдин"],
-                ru:["мин назад","ч назад","дн назад"], en:["min ago","h ago","d ago"] }[state.lang];
-  if(min < 60) return `${min} ${map[0]}`;
-  if(min < 1440) return `${Math.round(min/60)} ${map[1]}`;
-  return `${Math.round(min/1440)} ${map[2]}`;
+  const d = new Date(Date.now() - min*60000);
+  const p = x=> String(x).padStart(2,"0");
+  const hm = `${p(d.getHours())}:${p(d.getMinutes())}`;
+  const now = new Date();
+  const sameDay = d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();
+  return sameDay ? hm : `${hm} / ${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`;
+}
+
+/* ---------- theme ---------- */
+function applyTheme(){
+  const dark = state.theme === "dark";
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  const b = $("#themeBtn"); if(b){ b.textContent = dark ? "☀️" : "🌙"; }
 }
 
 function renderDate(){
@@ -284,5 +294,11 @@ $("#aShare").addEventListener("click", ()=>{
   else { navigator.clipboard?.writeText(url); $("#aShareT").textContent = "✓"; setTimeout(renderStatic,1200); }
 });
 $("#digBtn").addEventListener("click", ()=>{ $("#digBtn").textContent = "✓ " + t("digestBtn"); });
+$("#themeBtn").addEventListener("click", ()=>{
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  localStorage.setItem("nd_theme", state.theme);
+  applyTheme();
+});
 
+applyTheme();
 renderAll();
