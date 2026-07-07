@@ -6,8 +6,14 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Dependencies (на будущее)
+# Dependencies
 node_modules/
 dist/
 .env
 *.log
+
+# Runtime data (генерируется через `npm run seed`)
+data/*.json
+
+# Отброшенный файл после рефакторинга
+public/_old_data.js

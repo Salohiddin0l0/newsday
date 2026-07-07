@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NewsDay — Редакция (CMS)</title>
+<style>
+  :root{--bg:#f2f3f5;--page:#fff;--text:#15181c;--muted:#8a9099;--line:#e6e8eb;--chip:#f0f1f3;--brand:#e11b22;--brand-d:#b3141a;--ok:#12924a;--warn:#c47f0a;--maxw:1080px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.45}
+  a{color:var(--brand);text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 16px}
+  header{background:var(--text);color:#fff}
+  header .wrap{display:flex;align-items:center;gap:14px;height:56px}
+  header .logo{font-weight:900;font-size:19px}header .logo b{color:var(--brand)}
+  header .tag{background:var(--brand);font-size:11px;font-weight:800;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px}
+  header .sp{flex:1}
+  header a,header button{color:#cfd3d8;background:none;border:none;font-size:13px;cursor:pointer;font-weight:600}
+  .card{background:var(--page);border:1px solid var(--line);border-radius:8px;padding:18px;margin:18px 0}
+  h2{font-size:16px;margin-bottom:14px}
+  label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.3px}
+  input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--page);color:var(--text);font-size:14px;font-family:inherit;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+  textarea{resize:vertical;min-height:64px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:640px){.row,.row4{grid-template-columns:1fr}}
+  .btn{background:var(--brand);color:#fff;border:none;padding:10px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px}
+  .btn:hover{background:var(--brand-d)}
+  .btn.ghost{background:var(--chip);color:var(--text)}
+  .btn.sm{padding:6px 10px;font-size:12px}
+  .btn.ok{background:var(--ok)}.btn.gray{background:#6b7280}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--page);border:1px solid var(--line);border-radius:8px;padding:14px;text-align:center}
+  .stat .n{font-size:26px;font-weight:800}.stat .l{font-size:12px;color:var(--muted)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{background:var(--chip);border:1px solid var(--line);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer}
+  .chip.active{background:var(--text);color:#fff;border-color:var(--text)}
+  .nitem{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+  .nitem:first-child{border-top:none}
+  .nitem .th{width:64px;height:48px;border-radius:5px;background-size:cover;background-position:center;flex:none;background-color:var(--chip)}
+  .nitem .info{flex:1;min-width:0}
+  .nitem .info b{display:block;font-size:14px;line-height:1.3}
+  .nitem .info small{color:var(--muted)}
+  .badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px}
+  .badge.published{background:#e3f5ea;color:var(--ok)}
+  .badge.pending{background:#fdf1dc;color:var(--warn)}
+  .badge.rejected{background:#fde3e3;color:var(--brand)}
+  .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .login{max-width:360px;margin:80px auto}
+  .msg{padding:10px 12px;border-radius:6px;font-size:13px;margin-top:10px;display:none}
+  .msg.err{background:#fde3e3;color:var(--brand);display:block}
+  .msg.ok{background:#e3f5ea;color:var(--ok);display:block}
+  .hide{display:none}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="logo">News<b>Day</b></span>
+    <span class="tag">CMS · Редакция</span>
+    <span class="sp"></span>
+    <a href="index.html">← На сайт</a>
+    <button id="logoutBtn" class="hide">Выйти</button>
+  </div>
+</header>
+
+<!-- Экран входа -->
+<div id="loginView" class="wrap">
+  <div class="card login">
+    <h2>Вход в редакцию</h2>
+    <label>Пароль</label>
+    <input id="pass" type="password" placeholder="Пароль администратора" autofocus>
+    <div class="hint">Для прототипа пароль по умолчанию: <b>admin123</b></div>
+    <div style="margin-top:14px"><button class="btn" id="loginBtn" style="width:100%">Войти</button></div>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- Панель -->
+<div id="adminView" class="wrap hide">
+  <div class="stats" id="stats"></div>
+
+  <div class="card">
+    <h2>➕ Новая новость</h2>
+    <div class="row4">
+      <div><label>Категория</label><select id="f_cat"></select></div>
+      <div><label>Район</label><select id="f_district"></select></div>
+      <div><label>Источник</label><input id="f_source" placeholder="Kun.uz / Хокимият..."></div>
+      <div><label>Статус</label><select id="f_status">
+        <option value="pending">На модерации</option>
+        <option value="published">Опубликовать сразу</option>
+      </select></div>
+    </div>
+    <div class="row4">
+      <div><label>Изображение (URL)</label><input id="f_img" placeholder="https://..."></div>
+      <div><label>Время (минут назад)</label><input id="f_time" type="number" value="0"></div>
+      <div><label>Срочно (breaking)</label><select id="f_breaking"><option value="false">Нет</option><option value="true">Да</option></select></div>
+      <div><label>Проверенный источник</label><select id="f_verified"><option value="true">Да</option><option value="false">Нет</option></select></div>
+    </div>
+
+    <label style="margin-top:16px">Заголовок / Лид / Текст (по языкам)</label>
+    <div id="langForms"></div>
+
+    <div style="margin-top:16px"><button class="btn" id="createBtn">Создать новость</button></div>
+    <div class="msg" id="createMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Новости</h2>
+    <div class="chips" id="statusFilter">
+      <span class="chip active" data-s="">Все</span>
+      <span class="chip" data-s="pending">На модерации</span>
+      <span class="chip" data-s="published">Опубликованные</span>
+      <span class="chip" data-s="rejected">Отклонённые</span>
+    </div>
+    <div id="newsList"></div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let TOKEN = localStorage.getItem("nd_admin_token") || "";
+let META = { districts:[], categories:[] };
+let filterStatus = "";
+const LANGS = [["ru","Русский"],["uz","O'zbekcha"],["uzc","Ўзбекча"],["en","English"]];
+
+async function apiGet(url){ const r = await fetch(url,{headers:authH()}); if(r.status===401) return logout(); return r.json(); }
+async function apiSend(method,url,body){
+  const r = await fetch(url,{method,headers:{...authH(),"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+  if(r.status===401){ logout(); throw new Error("unauthorized"); }
+  return r.json();
+}
+function authH(){ return TOKEN ? {Authorization:"Bearer "+TOKEN} : {}; }
+
+/* ---------- auth ---------- */
+async function login(){
+  const msg = $("#loginMsg"); msg.className="msg";
+  const r = await (await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:$("#pass").value})})).json();
+  if(r.token){ TOKEN=r.token; localStorage.setItem("nd_admin_token",TOKEN); showAdmin(); }
+  else { msg.textContent="Неверный пароль"; msg.className="msg err"; }
+}
+function logout(){ TOKEN=""; localStorage.removeItem("nd_admin_token"); $("#adminView").classList.add("hide"); $("#loginView").classList.remove("hide"); $("#logoutBtn").classList.add("hide"); }
+
+/* ---------- setup ---------- */
+async function showAdmin(){
+  $("#loginView").classList.add("hide");
+  $("#adminView").classList.remove("hide");
+  $("#logoutBtn").classList.remove("hide");
+  META = await apiGet("/api/meta");
+  fillSelect($("#f_cat"), META.categories.filter(c=>c.id!=="all"));
+  fillSelect($("#f_district"), META.districts);
+  buildLangForms();
+  await refresh();
+}
+function fillSelect(sel, items){ sel.innerHTML=""; items.forEach(i=> sel.add(new Option(i.ru||i.id, i.id))); }
+function buildLangForms(){
+  $("#langForms").innerHTML = LANGS.map(([code,name])=>`
+    <div style="border:1px solid var(--line);border-radius:6px;padding:10px;margin-top:8px">
+      <b style="font-size:12px">${name}</b>
+      <input data-f="t" data-l="${code}" placeholder="Заголовок (${code})" style="margin-top:6px">
+      <input data-f="l" data-l="${code}" placeholder="Краткое описание (${code})" style="margin-top:6px">
+      <textarea data-f="b" data-l="${code}" placeholder="Текст, абзацы с новой строки (${code})" style="margin-top:6px"></textarea>
+    </div>`).join("");
+}
+
+/* ---------- stats + list ---------- */
+async function refresh(){
+  const data = await apiGet("/api/admin/news"+(filterStatus?("?status="+filterStatus):""));
+  renderStats(data.stats);
+  renderList(data.items);
+}
+function renderStats(s){
+  const cells = [["total","Всего"],["published","Опубликовано"],["pending","На модерации"],["rejected","Отклонено"],["subscribers","Подписчиков"]];
+  $("#stats").innerHTML = cells.map(([k,l])=>`<div class="stat"><div class="n">${s[k]??0}</div><div class="l">${l}</div></div>`).join("");
+}
+function renderList(items){
+  if(!items.length){ $("#newsList").innerHTML = `<div style="color:var(--muted);padding:16px 0">Нет новостей</div>`; return; }
+  $("#newsList").innerHTML = "";
+  items.forEach(n=>{
+    const div = document.createElement("div");
+    div.className = "nitem";
+    div.innerHTML = `
+      <div class="th" style="background-image:url('${n.img||""}')"></div>
+      <div class="info">
+        <b>${(n.t&&n.t.ru)||"(без заголовка)"}</b>
+        <small>${catName(n.cat)} · ${distName(n.district)} · ${n.source||""} · <span class="badge ${n.status}">${statusLabel(n.status)}</span></small>
+      </div>
+      <div class="acts"></div>`;
+    const acts = div.querySelector(".acts");
+    if(n.status!=="published") acts.appendChild(btn("✓ Одобрить","btn sm ok",()=>moderate(n.id,"approve")));
+    if(n.status!=="rejected")  acts.appendChild(btn("✕ Отклонить","btn sm gray",()=>moderate(n.id,"reject")));
+    acts.appendChild(btn("🗑","btn sm ghost",()=>del(n.id)));
+    $("#newsList").appendChild(div);
+  });
+}
+function btn(label,cls,fn){ const b=document.createElement("button"); b.className=cls; b.textContent=label; b.onclick=fn; return b; }
+function catName(id){ const c=META.categories.find(x=>x.id===id); return c?c.ru:id; }
+function distName(id){ const d=META.districts.find(x=>x.id===id); return d?d.ru:id; }
+function statusLabel(s){ return {published:"Опубликовано",pending:"На модерации",rejected:"Отклонено"}[s]||s; }
+
+async function moderate(id,action){ await apiSend("POST",`/api/admin/news/${id}/moderate`,{action}); refresh(); }
+async function del(id){ if(confirm("Удалить новость?")){ await apiSend("DELETE",`/api/admin/news/${id}`); refresh(); } }
+
+/* ---------- create ---------- */
+async function createNews(){
+  const msg=$("#createMsg"); msg.className="msg";
+  const payload = {
+    cat:$("#f_cat").value, district:$("#f_district").value, source:$("#f_source").value,
+    status:$("#f_status").value, img:$("#f_img").value, time:Number($("#f_time").value)||0,
+    breaking:$("#f_breaking").value==="true", verified:$("#f_verified").value==="true",
+    t:{}, l:{}, b:{},
+  };
+  document.querySelectorAll("#langForms [data-f]").forEach(inp=>{
+    const f=inp.dataset.f, l=inp.dataset.l, v=inp.value.trim();
+    if(!v) return;
+    if(f==="b") payload.b[l] = v.split("\n").map(s=>s.trim()).filter(Boolean);
+    else payload[f][l] = v;
+  });
+  if(!payload.t.ru){ msg.textContent="Заголовок на русском обязателен"; msg.className="msg err"; return; }
+  await apiSend("POST","/api/admin/news",payload);
+  msg.textContent="✓ Новость создана"; msg.className="msg ok";
+  document.querySelectorAll("#langForms input,#langForms textarea").forEach(i=>i.value="");
+  $("#f_source").value=""; $("#f_img").value="";
+  refresh();
+}
+
+/* ---------- events ---------- */
+$("#loginBtn").onclick = login;
+$("#pass").addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
+$("#logoutBtn").onclick = logout;
+$("#createBtn").onclick = createNews;
+$("#statusFilter").addEventListener("click",e=>{
+  const chip=e.target.closest(".chip"); if(!chip) return;
+  document.querySelectorAll("#statusFilter .chip").forEach(c=>c.classList.remove("active"));
+  chip.classList.add("active"); filterStatus=chip.dataset.s; refresh();
+});
+
+/* ---------- boot ---------- */
+if(TOKEN) showAdmin().catch(logout); else logout();
+</script>
+</body>
+</html>

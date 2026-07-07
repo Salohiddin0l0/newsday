@@ -1,5 +1,9 @@
-/* NewsDay — логика прототипа (Kun.uz-style, разные типы карточек) */
+/* NewsDay — фронтенд (данные с backend API) */
 const $ = s => document.querySelector(s);
+
+/* Справочники и новости приходят с сервера */
+let NEWS = [], DISTRICTS = [], CATEGORIES = [], CAT_LABEL = {}, DIST_LABEL = {};
+
 const state = {
   lang: localStorage.getItem("nd_lang") || "ru",
   cat: "all",
@@ -12,43 +16,52 @@ const state = {
 
 const EXTRA = {
   uz:  { saved:"Saqlanganlar", live:"Jonli", empty:"Hech narsa topilmadi", emptyBk:"Saqlangan yangiliklar yo'q",
-         main:"Asosiy", focus:"Tahririyat tanlovi", latest:"So'nggi yangiliklar", photo:"Foto", video:"Video" },
+         main:"Asosiy", focus:"Tahririyat tanlovi", latest:"So'nggi yangiliklar", photo:"Foto", video:"Video",
+         loading:"Yuklanmoqda...", offline:"Serverga ulanib bo'lmadi", subEmail:"Email manzilingizni kiriting:", subOk:"Obuna rasmiylashtirildi!" },
   uzc: { saved:"Сақланганлар", live:"Жонли", empty:"Ҳеч нарса топилмади", emptyBk:"Сақланган янгиликлар йўқ",
-         main:"Асосий", focus:"Таҳририят танлови", latest:"Сўнгги янгиликлар", photo:"Фото", video:"Видео" },
+         main:"Асосий", focus:"Таҳририят танлови", latest:"Сўнгги янгиликлар", photo:"Фото", video:"Видео",
+         loading:"Юкланмоқда...", offline:"Серверга уланиб бўлмади", subEmail:"Email манзилингизни киритинг:", subOk:"Обуна расмийлаштирилди!" },
   ru:  { saved:"Закладки", live:"Срочно", empty:"Ничего не найдено", emptyBk:"Нет сохранённых новостей",
-         main:"Главное", focus:"Выбор редакции", latest:"Последние новости", photo:"Фото", video:"Видео" },
+         main:"Главное", focus:"Выбор редакции", latest:"Последние новости", photo:"Фото", video:"Видео",
+         loading:"Загрузка...", offline:"Не удалось подключиться к серверу", subEmail:"Введите ваш email:", subOk:"Подписка оформлена!" },
   en:  { saved:"Bookmarks", live:"Live", empty:"Nothing found", emptyBk:"No saved stories",
-         main:"Top", focus:"Editor's choice", latest:"Latest news", photo:"Photo", video:"Video" },
+         main:"Top", focus:"Editor's choice", latest:"Latest news", photo:"Photo", video:"Video",
+         loading:"Loading...", offline:"Could not connect to the server", subEmail:"Enter your email:", subOk:"Subscribed!" },
 };
 
 function t(key, ...a){ const v = I18N[state.lang][key]; return typeof v === "function" ? v(...a) : v; }
 function x(key){ return EXTRA[state.lang][key]; }
-function loc(o){ return o[state.lang] || o.ru; }
+function loc(o){ return (o && (o[state.lang] || o.ru)) || ""; }
 
+/* ---------- API ---------- */
+const api = {
+  async get(url){ const r = await fetch(url); if(!r.ok) throw new Error(r.status); return r.json(); },
+  async post(url, body){
+    const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body) });
+    return r.json();
+  },
+};
+
+async function loadData(){
+  const [meta, news] = await Promise.all([ api.get("/api/meta"), api.get("/api/news") ]);
+  DISTRICTS = meta.districts;
+  CATEGORIES = meta.categories;
+  CAT_LABEL = Object.fromEntries(CATEGORIES.map(c=>[c.id, c]));
+  DIST_LABEL = Object.fromEntries(DISTRICTS.map(d=>[d.id, d]));
+  NEWS = news.items;
+}
+
+/* ---------- helpers ---------- */
 // Время в стиле Kun.uz: сегодня — «13:32», старше — «19:24 / 06.07.2026»
 function timeAgo(min){
   const d = new Date(Date.now() - min*60000);
-  const p = x=> String(x).padStart(2,"0");
+  const p = n=> String(n).padStart(2,"0");
   const hm = `${p(d.getHours())}:${p(d.getMinutes())}`;
   const now = new Date();
   const sameDay = d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();
   return sameDay ? hm : `${hm} / ${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`;
 }
 
-/* ---------- theme ---------- */
-function applyTheme(){
-  const dark = state.theme === "dark";
-  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-  const b = $("#themeBtn"); if(b){ b.textContent = dark ? "☀️" : "🌙"; }
-}
-
-function renderDate(){
-  const locale = { uz:"uz-UZ", uzc:"ru-RU", ru:"ru-RU", en:"en-US" }[state.lang];
-  const s = new Date().toLocaleDateString(locale, { weekday:"long", day:"numeric", month:"long", year:"numeric" });
-  $("#date").textContent = s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-/* тип медиа для визуального разнообразия карточек */
 function media(n){
   if(["events","city"].includes(n.cat)) return { ic:"📷", label:x("photo") };
   if(["incident"].includes(n.cat))       return { ic:"▶", label:x("video") };
@@ -56,6 +69,19 @@ function media(n){
 }
 function mBadge(n){ const m = media(n); return m ? `<span class="mbadge">${m.ic} ${m.label}</span>` : ""; }
 function liveBadge(n){ return n.breaking ? `<span class="live">${x("live")}</span>` : ""; }
+
+/* ---------- theme ---------- */
+function applyTheme(){
+  const dark = state.theme === "dark";
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  const b = $("#themeBtn"); if(b) b.textContent = dark ? "☀️" : "🌙";
+}
+
+function renderDate(){
+  const locale = { uz:"uz-UZ", uzc:"ru-RU", ru:"ru-RU", en:"en-US" }[state.lang];
+  const s = new Date().toLocaleDateString(locale, { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+  $("#date").textContent = s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 /* ---------- controls ---------- */
 function renderLangButtons(){
@@ -82,7 +108,7 @@ function renderDistrict(){
   $("#districtLabel").textContent = t("district");
 }
 
-/* ---------- filtering ---------- */
+/* ---------- filtering (клиентское, над опубликованными) ---------- */
 function filtered(){
   let list = NEWS.slice();
   if(state.showBookmarks) list = list.filter(n=> state.bookmarks.includes(n.id));
@@ -178,8 +204,6 @@ function renderFeed(){
     root.appendChild(el(`<div class="empty"><div class="ee">${state.showBookmarks?"🔖":"🔍"}</div>${state.showBookmarks?x("emptyBk"):x("empty")}</div>`));
     return;
   }
-
-  // Поиск/закладки — простой список, без «журнальных» блоков
   if(state.query || state.showBookmarks){
     root.appendChild(divHead(state.showBookmarks ? x("saved") : x("latest")));
     const l = el(`<div class="list"></div>`);
@@ -189,7 +213,6 @@ function renderFeed(){
   }
 
   let i = 0;
-  // 1) Топ-блок: hero + колонка «Главное»
   const top = el(`<div class="topblock"></div>`);
   top.appendChild(heroCard(list[i++]));
   const heads = el(`<div class="heads"></div>`);
@@ -197,15 +220,12 @@ function renderFeed(){
   top.appendChild(heads);
   root.appendChild(top);
 
-  // 2) Плитки-overlay «В фокусе» (если хватает материалов)
   if(list.length - i >= 3){
     root.appendChild(divHead(x("focus")));
     const tiles = el(`<div class="tiles"></div>`);
     for(let k=0; k<3 && i<list.length; k++) tiles.appendChild(tileCard(list[i++]));
     root.appendChild(tiles);
   }
-
-  // 3) Обычный список «Последние новости»
   if(i < list.length){
     root.appendChild(divHead(x("latest")));
     const l = el(`<div class="list"></div>`);
@@ -235,9 +255,9 @@ function toggleBk(id){
   if(currentArticle && currentArticle.id===id) syncArticleBk();
 }
 function renderBkCount(){
-  const el2 = $("#bkCount");
-  if(state.bookmarks.length){ el2.style.display="flex"; el2.textContent = state.bookmarks.length; }
-  else el2.style.display="none";
+  const b = $("#bkCount");
+  if(state.bookmarks.length){ b.style.display="flex"; b.textContent = state.bookmarks.length; }
+  else b.style.display="none";
 }
 
 /* ---------- article modal ---------- */
@@ -281,24 +301,49 @@ function renderAll(){
   renderStatic(); renderSidebar(); renderPop(); renderBkCount(); renderFeed();
 }
 
-/* ---------- events ---------- */
-$("#search").addEventListener("input", e=>{ state.query = e.target.value.trim(); renderFeed(); });
-$("#bkBtn").addEventListener("click", ()=>{ state.showBookmarks = !state.showBookmarks; if(state.showBookmarks){state.cat="all";state.district="all";} renderAll(); });
-$("#closeModal").addEventListener("click", closeArticle);
-$("#modal").addEventListener("click", e=>{ if(e.target.id==="modal") closeArticle(); });
-document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeArticle(); });
-$("#aBk").addEventListener("click", ()=> currentArticle && toggleBk(currentArticle.id));
-$("#aShare").addEventListener("click", ()=>{
-  const url = location.href;
-  if(navigator.share) navigator.share({title: loc(currentArticle.t), url});
-  else { navigator.clipboard?.writeText(url); $("#aShareT").textContent = "✓"; setTimeout(renderStatic,1200); }
-});
-$("#digBtn").addEventListener("click", ()=>{ $("#digBtn").textContent = "✓ " + t("digestBtn"); });
-$("#themeBtn").addEventListener("click", ()=>{
-  state.theme = state.theme === "dark" ? "light" : "dark";
-  localStorage.setItem("nd_theme", state.theme);
-  applyTheme();
-});
+/* ---------- digest subscribe (пишет в backend) ---------- */
+async function subscribeDigest(){
+  const email = prompt(x("subEmail"));
+  if(!email) return;
+  try{
+    const r = await api.post("/api/subscribe", { email, district: state.district });
+    if(r.ok){ $("#digBtn").textContent = "✓ " + x("subOk"); }
+    else alert(r.error || "error");
+  }catch{ alert(x("offline")); }
+}
 
-applyTheme();
-renderAll();
+/* ---------- events ---------- */
+function bindEvents(){
+  $("#search").addEventListener("input", e=>{ state.query = e.target.value.trim(); renderFeed(); });
+  $("#bkBtn").addEventListener("click", ()=>{ state.showBookmarks = !state.showBookmarks; if(state.showBookmarks){state.cat="all";state.district="all";} renderAll(); });
+  $("#closeModal").addEventListener("click", closeArticle);
+  $("#modal").addEventListener("click", e=>{ if(e.target.id==="modal") closeArticle(); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeArticle(); });
+  $("#aBk").addEventListener("click", ()=> currentArticle && toggleBk(currentArticle.id));
+  $("#aShare").addEventListener("click", ()=>{
+    const url = location.href;
+    if(navigator.share) navigator.share({title: loc(currentArticle.t), url});
+    else { navigator.clipboard?.writeText(url); $("#aShareT").textContent = "✓"; setTimeout(renderStatic,1200); }
+  });
+  $("#digBtn").addEventListener("click", subscribeDigest);
+  $("#themeBtn").addEventListener("click", ()=>{
+    state.theme = state.theme === "dark" ? "light" : "dark";
+    localStorage.setItem("nd_theme", state.theme);
+    applyTheme();
+  });
+}
+
+/* ---------- init ---------- */
+async function init(){
+  applyTheme();
+  bindEvents();
+  $("#feedRoot").innerHTML = `<div class="empty">${x("loading")}</div>`;
+  try{
+    await loadData();
+    renderAll();
+  }catch(e){
+    $("#feedRoot").innerHTML = `<div class="empty"><div class="ee">📡</div>${x("offline")}<br><small>${e.message||e}</small></div>`;
+  }
+}
+
+init();

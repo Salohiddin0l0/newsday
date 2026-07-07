@@ -1,0 +1,14 @@
+{
+  "name": "newsday",
+  "version": "1.0.0",
+  "description": "NewsDay — гиперлокальные новости Ташкента (frontend + backend API + CMS)",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "seed": "node server/seed.js",
+    "seed:force": "node server/seed.js --force"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
