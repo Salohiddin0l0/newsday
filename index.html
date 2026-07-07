@@ -6,172 +6,217 @@
 <title>NewsDay — Новости Ташкента</title>
 <style>
   :root{
-    --bg:#0f1419; --surface:#171e26; --surface-2:#1e2833; --border:#2a3642;
-    --text:#e8edf2; --muted:#8b99a7; --brand:#ff5722; --brand-2:#ff8a65;
-    --accent:#2dd4bf; --radius:14px; --maxw:1180px;
+    --bg:#f2f3f5; --page:#ffffff; --text:#15181c; --muted:#8a9099; --line:#e6e8eb;
+    --brand:#e11b22; --brand-d:#b3141a; --link:#1b3a6b; --maxw:1200px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+  html,body{background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45;font-size:15px}
   a{color:inherit;text-decoration:none}
   img{max-width:100%;display:block}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 16px}
 
-  /* Header */
-  header{position:sticky;top:0;z-index:50;background:rgba(15,20,25,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
-  .topbar{display:flex;align-items:center;gap:16px;height:64px}
-  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:20px;letter-spacing:-.5px}
-  .logo .mark{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:linear-gradient(135deg,var(--brand),var(--brand-2));border-radius:9px;font-size:18px}
-  .logo b{color:var(--brand)}
-  .search{flex:1;max-width:440px;position:relative}
-  .search input{width:100%;height:40px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;color:var(--text);padding:0 16px 0 40px;font-size:14px;outline:none}
-  .search input:focus{border-color:var(--brand)}
-  .search svg{position:absolute;left:14px;top:11px;opacity:.5}
-  .spacer{flex:1}
-  .lang{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px}
-  .lang button{background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;padding:5px 9px;border-radius:999px;cursor:pointer;transition:.15s}
-  .lang button.active{background:var(--brand);color:#fff}
-  .iconbtn{background:var(--surface-2);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:999px;cursor:pointer;font-size:16px;display:inline-flex;align-items:center;justify-content:center;position:relative}
-  .iconbtn .badge{position:absolute;top:-4px;right:-4px;background:var(--brand);color:#fff;font-size:10px;font-weight:800;min-width:17px;height:17px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+  /* Top strip */
+  .strip{background:var(--text);color:#cfd3d8;font-size:12.5px}
+  .strip .wrap{display:flex;align-items:center;gap:16px;height:34px}
+  .strip .date{color:#9aa0a8}
+  .strip .wthr{display:flex;align-items:center;gap:5px}
+  .strip .sp{flex:1}
+  .lang{display:flex;align-items:center;gap:2px}
+  .lang button{background:none;border:none;color:#aeb4bc;font-size:12.5px;font-weight:700;padding:3px 7px;border-radius:4px;cursor:pointer}
+  .lang button.active{color:#fff;background:var(--brand)}
 
-  /* Filters */
-  .filters{border-bottom:1px solid var(--border);background:var(--bg)}
-  .chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:none}
-  .chips::-webkit-scrollbar{display:none}
-  .chip{white-space:nowrap;background:var(--surface-2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px}
-  .chip:hover{color:var(--text)}
-  .chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
-  .chip .dot{width:7px;height:7px;border-radius:50%}
+  /* Masthead */
+  .mast{background:var(--page);border-bottom:1px solid var(--line)}
+  .mast .wrap{display:flex;align-items:center;gap:20px;height:70px}
+  .logo{display:flex;align-items:baseline;font-weight:900;font-size:28px;letter-spacing:-1px}
+  .logo .r{color:var(--brand)}
+  .logo .dot{color:var(--brand)}
+  .search{margin-left:auto;position:relative;width:300px;max-width:42vw}
+  .search input{width:100%;height:38px;background:#f0f1f3;border:1px solid transparent;border-radius:4px;color:var(--text);padding:0 14px 0 36px;font-size:14px;outline:none}
+  .search input:focus{border-color:var(--brand);background:#fff}
+  .search svg{position:absolute;left:12px;top:11px;color:#9096a0}
+  .bk-btn{background:none;border:1px solid var(--line);width:38px;height:38px;border-radius:4px;cursor:pointer;font-size:15px;position:relative;flex:none}
+  .bk-btn .badge{position:absolute;top:-6px;right:-6px;background:var(--brand);color:#fff;font-size:10px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
-  .subbar{display:flex;align-items:center;gap:12px;padding:12px 0}
+  /* Category nav */
+  .nav{background:var(--page);border-bottom:2px solid var(--brand);position:sticky;top:0;z-index:40}
+  .nav .wrap{display:flex;align-items:center;gap:2px;overflow-x:auto;scrollbar-width:none}
+  .nav .wrap::-webkit-scrollbar{display:none}
+  .nav button{white-space:nowrap;background:none;border:none;color:var(--text);font-size:14px;font-weight:700;padding:13px 14px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.12s}
+  .nav button:hover{color:var(--brand)}
+  .nav button.active{color:var(--brand);border-bottom-color:var(--brand)}
+
+  /* Sub bar */
+  .subbar{background:var(--page);border-bottom:1px solid var(--line)}
+  .subbar .wrap{display:flex;align-items:center;gap:10px;padding:9px 16px}
+  .subbar .label{color:var(--muted);font-size:13px;font-weight:600}
   .districtsel{position:relative}
-  .districtsel select{appearance:none;background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:8px 34px 8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;outline:none}
-  .districtsel::after{content:"▾";position:absolute;right:12px;top:8px;color:var(--muted);pointer-events:none}
-  .subbar .label{color:var(--muted);font-size:13px}
-  .count{margin-left:auto;color:var(--muted);font-size:13px}
+  .districtsel select{appearance:none;background:#f0f1f3;border:1px solid var(--line);color:var(--text);padding:6px 30px 6px 12px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;outline:none}
+  .districtsel::after{content:"▾";position:absolute;right:10px;top:6px;color:var(--muted);pointer-events:none}
+  .subbar .count{margin-left:auto;color:var(--muted);font-size:13px}
 
   /* Layout */
-  main{padding:22px 0 60px}
-  .grid{display:grid;grid-template-columns:2fr 1fr;gap:26px;align-items:start}
-  @media(max-width:900px){.grid{grid-template-columns:1fr}.side{display:none}}
+  main{padding:20px 0 50px}
+  .grid{display:grid;grid-template-columns:1fr 330px;gap:28px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}.side{order:2}}
 
-  /* Cards */
-  .feed{display:flex;flex-direction:column;gap:16px}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:.18s;display:grid;grid-template-columns:200px 1fr}
-  .card:hover{border-color:#3a4a5a;transform:translateY(-2px)}
-  .card .thumb{height:100%;min-height:150px;background-size:cover;background-position:center;position:relative}
-  @media(max-width:560px){.card{grid-template-columns:1fr}.card .thumb{min-height:170px}}
-  .card .body{padding:16px 18px;display:flex;flex-direction:column;gap:8px}
-  .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px}
-  .cat{font-weight:800;letter-spacing:.3px;text-transform:uppercase;font-size:11px}
-  .card h3{font-size:17px;line-height:1.3;letter-spacing:-.3px}
-  .card p{color:var(--muted);font-size:13px}
-  .cardfoot{display:flex;align-items:center;gap:12px;margin-top:auto;font-size:12px;color:var(--muted)}
-  .cardfoot .src{display:flex;align-items:center;gap:5px}
-  .verified{color:var(--accent);font-weight:700}
-  .bk{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:17px;padding:4px}
-  .bk.on{color:var(--brand)}
-  .breaking{position:absolute;top:10px;left:10px;background:var(--brand);color:#fff;font-size:10px;font-weight:800;padding:4px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.4px;animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
+  .sechead{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .sechead h2{font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;position:relative;padding-left:12px}
+  .sechead h2::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:4px;background:var(--brand);border-radius:2px}
+
+  /* Hero */
+  .hero{display:block;background:var(--page);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:22px;cursor:pointer}
+  .hero:hover h3{color:var(--brand)}
+  .hero .img{width:100%;aspect-ratio:16/8;background-size:cover;background-position:center;position:relative}
+  .hero .cap{padding:16px 18px 18px}
+  .hero .cat{color:var(--brand);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+  .hero h3{font-size:26px;line-height:1.22;font-weight:800;letter-spacing:-.5px;margin:8px 0 8px}
+  .hero p{color:#5a6069;font-size:15px}
+  .hero .foot{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+
+  /* News list */
+  .list{display:flex;flex-direction:column}
+  .item{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:16px 0;border-top:1px solid var(--line);cursor:pointer}
+  .item:hover h3{color:var(--brand)}
+  .item .th{aspect-ratio:16/10;background-size:cover;background-position:center;border-radius:5px;position:relative}
+  .item .txt{display:flex;flex-direction:column;gap:6px}
+  .item .cat{color:var(--brand);font-weight:800;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+  .item h3{font-size:17px;line-height:1.28;font-weight:700;letter-spacing:-.2px}
+  .item p{color:#5a6069;font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .item .foot{display:flex;align-items:center;gap:9px;margin-top:auto;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .item .bk{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px}
+  .item .bk.on{color:var(--brand)}
+  @media(max-width:560px){.item{grid-template-columns:110px 1fr;gap:12px}.item h3{font-size:15px}.item p{display:none}}
+
+  .live{position:absolute;top:8px;left:8px;background:var(--brand);color:#fff;font-size:10px;font-weight:800;padding:3px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.4px}
+  .hero .live{font-size:11px;padding:4px 9px}
+  .verified{color:#12924a;font-weight:700}
+  .src{color:#3a4048;font-weight:600}
+  .dotsep{color:#c4c8cd}
 
   /* Sidebar */
-  .side{display:flex;flex-direction:column;gap:18px;position:sticky;top:80px}
-  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
-  .panel h4{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px}
-  .weather{display:flex;align-items:center;gap:14px}
-  .weather .temp{font-size:34px;font-weight:800}
-  .weather .wsub{color:var(--muted);font-size:13px}
-  .trend{display:flex;flex-direction:column;gap:12px}
-  .trend a{display:flex;gap:10px;font-size:13px;line-height:1.35}
-  .trend .n{color:var(--brand);font-weight:800}
-  .trend a:hover .t{color:var(--brand)}
+  .side{display:flex;flex-direction:column;gap:20px;position:sticky;top:60px}
+  .box{background:var(--page);border:1px solid var(--line);border-radius:6px;padding:16px}
+  .box h4{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--brand);display:inline-block}
+  .pop a{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);cursor:pointer}
+  .pop a:first-child{border-top:none;padding-top:0}
+  .pop .n{color:var(--brand);font-weight:900;font-size:20px;line-height:1;min-width:22px}
+  .pop .t{font-size:14px;font-weight:600;line-height:1.3}
+  .pop a:hover .t{color:var(--brand)}
+  .weather{display:flex;align-items:center;gap:12px}
+  .weather .ic{font-size:40px}
+  .weather .temp{font-size:30px;font-weight:800}
+  .weather .ws{color:var(--muted);font-size:13px}
+  .digest p{color:#5a6069;font-size:13.5px;margin-bottom:12px}
+  .digest button{width:100%;background:var(--brand);color:#fff;border:none;padding:11px;border-radius:5px;font-weight:800;font-size:13.5px;cursor:pointer}
+  .digest button:hover{background:var(--brand-d)}
+
+  .empty{background:var(--page);border:1px solid var(--line);border-radius:6px;text-align:center;padding:56px 20px;color:var(--muted)}
+  .empty .ee{font-size:38px;margin-bottom:10px}
+
+  footer{background:var(--text);color:#9aa0a8;padding:24px 0;font-size:13px}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+  footer .logo{font-size:20px}footer .logo .r{color:#fff}
 
   /* Modal */
-  .modal{position:fixed;inset:0;z-index:100;display:none;align-items:flex-start;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);overflow-y:auto;padding:40px 16px}
+  .modal{position:fixed;inset:0;z-index:100;display:none;align-items:flex-start;justify-content:center;background:rgba(10,12,15,.55);overflow-y:auto;padding:32px 14px}
   .modal.open{display:flex}
-  .article{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:720px;width:100%;overflow:hidden;animation:up .25s}
-  @keyframes up{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
-  .article .hero{height:280px;background-size:cover;background-position:center}
-  .article .content{padding:26px 30px 34px}
-  .article h1{font-size:27px;line-height:1.22;letter-spacing:-.5px;margin:12px 0 14px}
-  .article .lead{font-size:16px;color:#c3ccd6;margin-bottom:16px}
-  .article .txt{color:#aeb9c4;font-size:15px;line-height:1.75}
-  .article .txt p{margin-bottom:14px}
-  .closeb{position:absolute;top:16px;right:16px;background:rgba(0,0,0,.5);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer}
-  .abar{display:flex;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}
-  .abar button{flex:1;background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer}
+  .article{background:var(--page);border-radius:8px;max-width:720px;width:100%;overflow:hidden;position:relative;animation:up .22s}
+  @keyframes up{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+  .article .hero-img{height:300px;background-size:cover;background-position:center}
+  .article .c{padding:24px 30px 30px}
+  .article .cat{color:var(--brand);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+  .article h1{font-size:28px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin:8px 0 10px}
+  .article .meta{display:flex;gap:9px;align-items:center;font-size:12.5px;color:var(--muted);flex-wrap:wrap;margin-bottom:16px}
+  .article .lead{font-size:17px;font-weight:600;color:#2a2f36;margin-bottom:14px}
+  .article .body{color:#33383f;font-size:15.5px;line-height:1.75}
+  .article .body p{margin-bottom:14px}
+  .closeb{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.55);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:17px;cursor:pointer;z-index:2}
+  .abar{display:flex;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+  .abar button{flex:1;background:#f0f1f3;border:1px solid var(--line);color:var(--text);padding:11px;border-radius:5px;font-weight:700;font-size:13.5px;cursor:pointer}
   .abar button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
-
-  .empty{text-align:center;padding:60px 20px;color:var(--muted)}
-  .empty .ee{font-size:40px;margin-bottom:10px}
-  footer{border-top:1px solid var(--border);padding:26px 0;color:var(--muted);font-size:13px;text-align:center}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap topbar">
-    <a class="logo" href="#"><span class="mark">📰</span>News<b>Day</b></a>
-    <div class="search">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
-      <input id="search" type="text" placeholder="Поиск...">
-    </div>
-    <div class="spacer"></div>
+<div class="strip">
+  <div class="wrap">
+    <span class="date" id="date"></span>
+    <span class="wthr">☀️ <span id="stripTemp">+34°</span></span>
+    <span class="sp"></span>
     <div class="lang" id="lang">
       <button data-l="uz">O'z</button>
       <button data-l="uzc">Ўз</button>
       <button data-l="ru" class="active">Ру</button>
       <button data-l="en">En</button>
     </div>
-    <button class="iconbtn" id="bkBtn" title="Закладки">🔖<span class="badge" id="bkCount" style="display:none">0</span></button>
   </div>
-  <div class="filters">
-    <div class="wrap">
-      <div class="chips" id="cats"></div>
-      <div class="subbar">
-        <span class="label" id="districtLabel">Район:</span>
-        <div class="districtsel"><select id="district"></select></div>
-        <span class="count" id="count"></span>
-      </div>
+</div>
+
+<div class="mast">
+  <div class="wrap">
+    <a class="logo" href="#">News<span class="r">Day</span><span class="dot">.uz</span></a>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+      <input id="search" type="text" placeholder="Поиск...">
     </div>
+    <button class="bk-btn" id="bkBtn" title="Закладки">🔖<span class="badge" id="bkCount" style="display:none">0</span></button>
   </div>
-</header>
+</div>
+
+<nav class="nav"><div class="wrap" id="cats"></div></nav>
+
+<div class="subbar">
+  <div class="wrap">
+    <span class="label" id="districtLabel">Район:</span>
+    <div class="districtsel"><select id="district"></select></div>
+    <span class="count" id="count"></span>
+  </div>
+</div>
 
 <main class="wrap">
   <div class="grid">
-    <div>
-      <div class="feed" id="feed"></div>
-    </div>
+    <section>
+      <div class="sechead"><h2 id="feedTitle">Лента новостей</h2></div>
+      <div id="hero"></div>
+      <div class="list" id="feed"></div>
+    </section>
     <aside class="side">
-      <div class="panel">
+      <div class="box pop">
+        <h4 id="popTitle">Популярное</h4>
+        <div id="pop"></div>
+      </div>
+      <div class="box">
         <h4 id="wTitle">Погода в Ташкенте</h4>
-        <div class="weather"><span style="font-size:38px">☀️</span><div><div class="temp">+34°</div><div class="wsub" id="wSub">Ясно · ощущается +37°</div></div></div>
+        <div class="weather"><span class="ic">☀️</span><div><div class="temp">+34°</div><div class="ws" id="wSub">Ясно · ощущается +37°</div></div></div>
       </div>
-      <div class="panel">
-        <h4 id="tTitle">Популярное сейчас</h4>
-        <div class="trend" id="trend"></div>
-      </div>
-      <div class="panel">
+      <div class="box digest">
         <h4 id="digTitle">Дайджест</h4>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:12px" id="digText">Получайте главные новости района утром и вечером.</p>
-        <button class="chip active" style="width:100%;justify-content:center" id="digBtn">🔔 Подписаться на дайджест</button>
+        <p id="digText">Получайте главные новости района утром и вечером.</p>
+        <button id="digBtn">🔔 Подписаться на дайджест</button>
       </div>
     </aside>
   </div>
 </main>
 
-<footer class="wrap">
-  <div>NewsDay · Гиперлокальные новости Ташкента · Прототип MVP</div>
+<footer>
+  <div class="wrap">
+    <a class="logo" href="#">News<span class="r">Day</span>.uz</a>
+    <span>Гиперлокальные новости Ташкента · Прототип MVP · 2026</span>
+  </div>
 </footer>
 
 <div class="modal" id="modal">
-  <div class="article" style="position:relative">
+  <div class="article">
     <button class="closeb" id="closeModal">✕</button>
-    <div class="hero" id="aHero"></div>
-    <div class="content">
-      <div class="meta" id="aMeta"></div>
+    <div class="hero-img" id="aHero"></div>
+    <div class="c">
+      <div class="cat" id="aCat"></div>
       <h1 id="aTitle"></h1>
+      <div class="meta" id="aMeta"></div>
       <div class="lead" id="aLead"></div>
-      <div class="txt" id="aBody"></div>
+      <div class="body" id="aBody"></div>
       <div class="abar">
         <button class="primary" id="aBk">🔖 <span id="aBkT">В закладки</span></button>
         <button id="aShare">🔗 <span id="aShareT">Поделиться</span></button>
