@@ -1,4 +1,4 @@
-/* NewsDay — логика прототипа (Kun.uz-style) */
+/* NewsDay — логика прототипа (Kun.uz-style, разные типы карточек) */
 const $ = s => document.querySelector(s);
 const state = {
   lang: localStorage.getItem("nd_lang") || "ru",
@@ -10,10 +10,14 @@ const state = {
 };
 
 const EXTRA = {
-  uz:  { feed:"Yangiliklar lentasi", saved:"Saqlanganlar", live:"Jonli", empty:"Hech narsa topilmadi", emptyBk:"Saqlangan yangiliklar yo'q" },
-  uzc: { feed:"Янгиликлар лентаси", saved:"Сақланганлар", live:"Жонли", empty:"Ҳеч нарса топилмади", emptyBk:"Сақланган янгиликлар йўқ" },
-  ru:  { feed:"Лента новостей", saved:"Закладки", live:"Срочно", empty:"Ничего не найдено", emptyBk:"Нет сохранённых новостей" },
-  en:  { feed:"News feed", saved:"Bookmarks", live:"Live", empty:"Nothing found", emptyBk:"No saved stories" },
+  uz:  { saved:"Saqlanganlar", live:"Jonli", empty:"Hech narsa topilmadi", emptyBk:"Saqlangan yangiliklar yo'q",
+         main:"Asosiy", focus:"Diqqat markazida", latest:"So'nggi yangiliklar", photo:"Foto", video:"Video" },
+  uzc: { saved:"Сақланганлар", live:"Жонли", empty:"Ҳеч нарса топилмади", emptyBk:"Сақланган янгиликлар йўқ",
+         main:"Асосий", focus:"Диққат марказида", latest:"Сўнгги янгиликлар", photo:"Фото", video:"Видео" },
+  ru:  { saved:"Закладки", live:"Срочно", empty:"Ничего не найдено", emptyBk:"Нет сохранённых новостей",
+         main:"Главное", focus:"В фокусе", latest:"Последние новости", photo:"Фото", video:"Видео" },
+  en:  { saved:"Bookmarks", live:"Live", empty:"Nothing found", emptyBk:"No saved stories",
+         main:"Top", focus:"In focus", latest:"Latest news", photo:"Photo", video:"Video" },
 };
 
 function t(key, ...a){ const v = I18N[state.lang][key]; return typeof v === "function" ? v(...a) : v; }
@@ -34,6 +38,15 @@ function renderDate(){
   $("#date").textContent = s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/* тип медиа для визуального разнообразия карточек */
+function media(n){
+  if(["events","city"].includes(n.cat)) return { ic:"📷", label:x("photo") };
+  if(["incident"].includes(n.cat))       return { ic:"▶", label:x("video") };
+  return null;
+}
+function mBadge(n){ const m = media(n); return m ? `<span class="mbadge">${m.ic} ${m.label}</span>` : ""; }
+function liveBadge(n){ return n.breaking ? `<span class="live">${x("live")}</span>` : ""; }
+
 /* ---------- controls ---------- */
 function renderLangButtons(){
   document.querySelectorAll("#lang button").forEach(b=>{
@@ -41,7 +54,6 @@ function renderLangButtons(){
     b.onclick = ()=>{ state.lang = b.dataset.l; localStorage.setItem("nd_lang", state.lang); renderAll(); };
   });
 }
-
 function renderCats(){
   const el = $("#cats"); el.innerHTML = "";
   CATEGORIES.forEach(c=>{
@@ -52,7 +64,6 @@ function renderCats(){
     el.appendChild(b);
   });
 }
-
 function renderDistrict(){
   const sel = $("#district"); sel.innerHTML = "";
   sel.add(new Option(t("all"), "all", state.district==="all", state.district==="all"));
@@ -81,64 +92,125 @@ function metaFoot(n){
        + `<span class="dotsep">·</span><span>${timeAgo(n.time)}</span>`;
 }
 
-/* ---------- feed ---------- */
-function renderFeed(){
-  const hero = $("#hero"), feed = $("#feed");
-  hero.innerHTML = ""; feed.innerHTML = "";
-  const list = filtered();
-  $("#count").textContent = t("count", list.length);
-  $("#feedTitle").textContent = state.showBookmarks ? x("saved") : x("feed");
+/* ---------- card builders ---------- */
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstElementChild; }
 
-  if(!list.length){
-    hero.innerHTML = `<div class="empty"><div class="ee">${state.showBookmarks?"🔖":"🔍"}</div>${state.showBookmarks?x("emptyBk"):x("empty")}</div>`;
-    return;
-  }
-
-  // Hero = первая новость (только на общей ленте без поиска)
-  let rest = list;
-  if(!state.query){
-    const n = list[0]; rest = list.slice(1);
-    const c = CAT_LABEL[n.cat];
-    const h = document.createElement("div");
-    h.className = "hero";
-    h.innerHTML = `
-      <div class="img" style="background-image:url('${n.img}')">${n.breaking?`<span class="live">${x("live")}</span>`:""}</div>
+function heroCard(n){
+  const c = CAT_LABEL[n.cat];
+  const node = el(`
+    <div class="hero">
+      <div class="img" style="background-image:url('${n.img}')">${liveBadge(n)}${mBadge(n)}</div>
       <div class="cap">
         <span class="cat">${loc(c)}</span>
         <h3>${loc(n.t)}</h3>
         <p>${loc(n.l)}</p>
         <div class="foot">${metaFoot(n)}</div>
-      </div>`;
-    h.onclick = ()=> openArticle(n);
-    hero.appendChild(h);
-  }
-
-  rest.forEach(n=>{
-    const c = CAT_LABEL[n.cat];
-    const on = state.bookmarks.includes(n.id);
-    const it = document.createElement("article");
-    it.className = "item";
-    it.innerHTML = `
-      <div class="th" style="background-image:url('${n.img}')">${n.breaking?`<span class="live">${x("live")}</span>`:""}</div>
+      </div>
+    </div>`);
+  node.onclick = ()=> openArticle(n);
+  return node;
+}
+function headRow(n){
+  const c = CAT_LABEL[n.cat];
+  const node = el(`
+    <div class="hrow">
+      <div class="th" style="background-image:url('${n.img}')">${liveBadge(n)}</div>
+      <div>
+        <span class="cat">${loc(c)}</span>
+        <h4>${loc(n.t)}</h4>
+        <div class="tm">${timeAgo(n.time)}</div>
+      </div>
+    </div>`);
+  node.onclick = ()=> openArticle(n);
+  return node;
+}
+function tileCard(n){
+  const c = CAT_LABEL[n.cat];
+  const node = el(`
+    <div class="tile">
+      <div class="img" style="background-image:url('${n.img}')"></div>
+      ${liveBadge(n)}${mBadge(n)}
+      <div class="cap">
+        <span class="cat">${loc(c)}</span>
+        <h4>${loc(n.t)}</h4>
+        <div class="tm">${timeAgo(n.time)}</div>
+      </div>
+    </div>`);
+  node.onclick = ()=> openArticle(n);
+  return node;
+}
+function listItem(n){
+  const c = CAT_LABEL[n.cat];
+  const on = state.bookmarks.includes(n.id);
+  const node = el(`
+    <article class="item">
+      <div class="th" style="background-image:url('${n.img}')">${liveBadge(n)}</div>
       <div class="txt">
         <span class="cat">${loc(c)}</span>
         <h3>${loc(n.t)}</h3>
         <p>${loc(n.l)}</p>
         <div class="foot">${metaFoot(n)}<button class="bk ${on?"on":""}" data-id="${n.id}">${on?"🔖":"🏷️"}</button></div>
-      </div>`;
-    it.querySelector(".bk").onclick = e=>{ e.stopPropagation(); toggleBk(n.id); };
-    it.onclick = ()=> openArticle(n);
-    feed.appendChild(it);
-  });
+      </div>
+    </article>`);
+  node.querySelector(".bk").onclick = e=>{ e.stopPropagation(); toggleBk(n.id); };
+  node.onclick = ()=> openArticle(n);
+  return node;
+}
+function divHead(title){ return el(`<div class="divhead"><h2>${title}</h2><span class="rule"></span></div>`); }
+
+/* ---------- feed assembly ---------- */
+function renderFeed(){
+  const root = $("#feedRoot"); root.innerHTML = "";
+  const list = filtered();
+  $("#count").textContent = t("count", list.length);
+
+  if(!list.length){
+    root.appendChild(el(`<div class="empty"><div class="ee">${state.showBookmarks?"🔖":"🔍"}</div>${state.showBookmarks?x("emptyBk"):x("empty")}</div>`));
+    return;
+  }
+
+  // Поиск/закладки — простой список, без «журнальных» блоков
+  if(state.query || state.showBookmarks){
+    root.appendChild(divHead(state.showBookmarks ? x("saved") : x("latest")));
+    const l = el(`<div class="list"></div>`);
+    list.forEach(n=> l.appendChild(listItem(n)));
+    root.appendChild(l);
+    return;
+  }
+
+  let i = 0;
+  // 1) Топ-блок: hero + колонка «Главное»
+  const top = el(`<div class="topblock"></div>`);
+  top.appendChild(heroCard(list[i++]));
+  const heads = el(`<div class="heads"></div>`);
+  for(let k=0; k<4 && i<list.length; k++) heads.appendChild(headRow(list[i++]));
+  top.appendChild(heads);
+  root.appendChild(top);
+
+  // 2) Плитки-overlay «В фокусе» (если хватает материалов)
+  if(list.length - i >= 3){
+    root.appendChild(divHead(x("focus")));
+    const tiles = el(`<div class="tiles"></div>`);
+    for(let k=0; k<3 && i<list.length; k++) tiles.appendChild(tileCard(list[i++]));
+    root.appendChild(tiles);
+  }
+
+  // 3) Обычный список «Последние новости»
+  if(i < list.length){
+    root.appendChild(divHead(x("latest")));
+    const l = el(`<div class="list"></div>`);
+    for(; i<list.length; i++) l.appendChild(listItem(list[i]));
+    root.appendChild(l);
+  }
 }
 
 /* ---------- popular ---------- */
 function renderPop(){
   $("#popTitle").textContent = t("trend");
   const pop = $("#pop"); pop.innerHTML = "";
-  NEWS.slice().sort((a,b)=>a.time-b.time).slice(0,5).forEach((n,i)=>{
+  NEWS.slice().sort((a,b)=>a.time-b.time).slice(0,5).forEach((n,idx)=>{
     const a = document.createElement("a");
-    a.innerHTML = `<span class="n">${i+1}</span><span class="t">${loc(n.t)}</span>`;
+    a.innerHTML = `<span class="n">${idx+1}</span><span class="t">${loc(n.t)}</span>`;
     a.onclick = ()=> openArticle(n);
     pop.appendChild(a);
   });
@@ -146,16 +218,16 @@ function renderPop(){
 
 /* ---------- bookmarks ---------- */
 function toggleBk(id){
-  const i = state.bookmarks.indexOf(id);
-  if(i>=0) state.bookmarks.splice(i,1); else state.bookmarks.push(id);
+  const idx = state.bookmarks.indexOf(id);
+  if(idx>=0) state.bookmarks.splice(idx,1); else state.bookmarks.push(id);
   localStorage.setItem("nd_bk", JSON.stringify(state.bookmarks));
   renderBkCount(); renderFeed();
   if(currentArticle && currentArticle.id===id) syncArticleBk();
 }
 function renderBkCount(){
-  const el = $("#bkCount");
-  if(state.bookmarks.length){ el.style.display="flex"; el.textContent = state.bookmarks.length; }
-  else el.style.display="none";
+  const el2 = $("#bkCount");
+  if(state.bookmarks.length){ el2.style.display="flex"; el2.textContent = state.bookmarks.length; }
+  else el2.style.display="none";
 }
 
 /* ---------- article modal ---------- */
@@ -179,7 +251,7 @@ function syncArticleBk(){
 }
 function closeArticle(){ $("#modal").classList.remove("open"); document.body.style.overflow=""; currentArticle=null; }
 
-/* ---------- sidebar static ---------- */
+/* ---------- sidebar / static ---------- */
 function renderSidebar(){
   $("#wTitle").textContent = t("weather");
   $("#wSub").textContent = t("wsub");
@@ -187,7 +259,6 @@ function renderSidebar(){
   $("#digText").textContent = t("digestText");
   $("#digBtn").textContent = t("digestBtn");
 }
-
 function renderStatic(){
   $("#search").placeholder = t("search");
   $("#bkBtn").title = t("bookmark");
